@@ -307,7 +307,7 @@ implementation accessible to practitioners across several fields.</p>
 <p>Areal data are data that are observed on a discrete set of locations
 that may be modeled as a graph. As opposed to geostatistical data, areal
 data have a fixed number of subregions. Areal data arise in many fields
-including health, ecology, community planning. Spatial clustering in
+including health, ecology, and community planning. Spatial clustering in
 these data are very important, and properly accounting for this
 clustering can greatly improve the quality of regression inference.
 Analyses of areal data can achieve various objectives, including
@@ -352,11 +352,13 @@ method available to practitioners across disciplines.</p>
 random field model (GMRF) which has the linear predictor <span
 class="math inline">\(\textbf{X}(G)\boldsymbol{\beta} +
 \boldsymbol{\omega} (G)\)</span>. <span
-class="math inline">\(G=(V,E)\)</span> is the underlying graph which
+class="math inline">\(G=(V,E)\)</span> is the underlying graph with
+vertices <span class="math inline">\(V = 1,..n\)</span> and edges <span
+class="math inline">\(E\)</span>. <span class="math inline">\(G\)</span>
 encodes the adjacency structure (edges of <span
 class="math inline">\(G\)</span>) among the areal units (nodes of <span
 class="math inline">\(G\)</span>) entailed in the study. <span
-class="math inline">\(\boldsymbol{\omega}=(\omega_1,...,\omega_n)&#39;\)</span>
+class="math inline">\(\boldsymbol{\omega}(G)=(\omega_1,...,\omega_n)&#39;\)</span>
 are the spatially dependent random effects, which capture the spatial
 dependence beyond what can be explained by the spatially structured
 covariates in the design matrix <span
@@ -411,11 +413,11 @@ posterior distribution of <span
 class="math inline">\(\boldsymbol{\omega}\)</span> can lead to a very
 slow mixing Markov chain. <span
 class="math inline">\(\boldsymbol{\omega}\)</span> can be updated in
-blocks to avoid this issue, however creating the proposals for these
+blocks to avoid this issue; however creating the proposals for these
 updates is difficult and execution time per iteration increases although
 the mixing is faster. In addition, the computation of det(<span
 class="math inline">\(\textbf{Q}\)</span>) can be computationally
-burdensome. Although, this issue can be eased through numerical
+burdensome, although this issue can be eased through numerical
 methods.</p>
 <p>There are several GMRF models similar to the CAR model which are also
 widely used, such as the ICAR (intrinsic CAR) and BYM models.</p>
@@ -771,13 +773,11 @@ defining <span class="math inline">\(\sigma^2\)</span> as the inverse of
     real&lt;lower=0&gt; sigma_sq = inv(tau);  
 }</code></pre>
 <p><br> Here we define the logistic regression model. In addition we
-define the priors for the coefficients. We define the prior for <span
+define the prior distributions. We define the prior for <span
 class="math inline">\(\boldsymbol{\gamma}\)</span> as multinormal with
 mean zero and covariance <span class="math inline">\(\sigma^2 \times
 \textbf{V}\)</span>, equivalent to <span
 class="math inline">\(\textbf{V}/\tau\)</span>.</p>
-<p><span class="math inline">\(\tau\)</span> is given a prior of <span
-class="math inline">\(GAMMA(0.5, 2000)\)</span>.</p>
 <pre class="stan"><code>model
 {
 
@@ -1074,7 +1074,7 @@ D = matrix(rep(s, n), n, n, byrow = TRUE)
 E = matrix(sum(s), n, n)
 M = A - D / n - t(D) / n + E / n^2</code></pre>
 <p><br> Here we construct <span
-class="math inline">\(\textbf{B}\)</span>, create the Graph Laplacian,
+class="math inline">\(\textbf{B}\)</span>, create the graph Laplacian,
 and solve for <span class="math inline">\(\textbf{V}\)</span>.</p>
 <pre class="r"><code>eig = eigs_sym(M, q)           
 B = eig$vectors               
@@ -1190,9 +1190,6 @@ models. Comparing the LOOIC values for each value of q we see that the
 model with <span class="math inline">\(q=50\)</span> was the best
 performing according to this information criteria.</p>
 <table class=" lightable-classic table table-striped table-hover table-condensed table" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto; font-family: sans-serif; width: auto !important; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
-<caption>
-Table 1: Comparison of model performance
-</caption>
 <thead>
 <tr>
 <th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
@@ -1241,8 +1238,8 @@ LOOIC
 <p>In this example the model that was best performing according to this
 information criteria was <span class="math inline">\(q =\)</span>
 50.</p>
-The results for the <span class="math inline">\(q =\)</span> 50 model is
-as follows:
+The results for the <span class="math inline">\(q =\)</span> 50 model
+are as follows:
 <table class=" lightable-classic table table-striped table-hover table-condensed table" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto; font-family: sans-serif; width: auto !important; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -1467,6 +1464,9 @@ $(document).ready(function () {
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
