@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Helen Keetley" />
+
+
+<title>Bayesian Spatial Filtering In R and Stan</title>
+
+<script src="site_libs/header-attrs-2.28/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Bayesian Spatial Modeling</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">Bayesian Spatial Filtering In R and
+Stan</h1>
+<h4 class="author">Helen Keetley</h4>
+
+</div>
+
+
+<ul>
+<li><a href="#introduction">Introduction</a>
+<ul>
+<li><a href="#previous_methods">Previous methods</a></li>
+</ul></li>
+<li><a href="#methodology">Methodology</a>
+<ul>
+<li><a href="#basis_representation">Basis representation</a></li>
+<li><a href="#modeling_and_comp">Modeling and computational
+advantages</a></li>
+<li><a href="#prior_choices">Prior choices</a></li>
+<li><a href="#use_of_stan">Use of Stan</a></li>
+</ul></li>
+<li><a href="#dataset_analysis">Dataset analysis</a>
+<ul>
+<li><a href="#hermit_thrush">Hermit thrush data</a>
+<ul>
+<li><a href="#analyzing_ht">Analyzing hermit thrush using R and
+Stan</a></li>
+<li><a href="#results_1">Results</a></li>
+</ul></li>
+<li><a href="#infant_mortality">Infant mortality</a>
+<ul>
+<li><a href="#analyzing_im">Analyzing infant mortality using R and
+Stan</a></li>
+<li><a href="#results_2">Results</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#references">References</a></li>
+</ul>
+<div id="introduction" class="section level2">
+<h2><a id="introduction"></a>Introduction</h2>
+<p>In this tutorial, we will introduce the Bayesian spatial filtering
+(BSF) approach and demonstrate how to implement it using R and Stan. The
+BSF approach is a basis representation (BR) method for areal data. We
+will specifically deal with Bayesian inference for hierarchical spatial
+models. The goal of this tutorial is to make this method and its
+implementation accessible to practitioners across several fields.</p>
+<p>Areal data are data that are observed on a discrete set of locations
+that may be modeled as a graph. As opposed to geostatistical data, areal
+data have a fixed number of subregions. Areal data arise in many fields
+including health, ecology, community planning. Spatial clustering in
+these data are very important, and properly accounting for this
+clustering can greatly improve the quality of regression inference.
+Analyses of areal data can achieve various objectives, including
+enhancing predictions through spatial dependence, performing spatial
+interpolation, identifying missing spatially dependent covariates,
+detecting spatial clusters, and fitting regression models that
+appropriately account for dependence.</p>
+<p>An example of areal data is the presence or absence of hermit thrush
+in Pennsylvania. This dataset was collected for the Second Atlas of
+Breeding Birds in Pennsylvania. Each square in the dataset corresponds
+to one of the 4,937 blocks that were defined for the atlas. Each of
+these blocks is approximately 24.8 square kilometers (9.6 square miles).
+The data is dichotomous— a dark square corresponds to presence of hermit
+thrush while a light square indicates that there is no hermit thrush
+within that square.</p>
+<p>The underlying graph for this dataset is a square lattice, and (<span
+class="math inline">\(\textit{i}\)</span>, <span
+class="math inline">\(\textit{j}\)</span>) ∈ E iff blocks <span
+class="math inline">\(\textit{i}\)</span> and <span
+class="math inline">\(\textit{j}\)</span> share a boundary. The hermit
+thrush data exhibit positive spatial dependence on several scales. We
+will apply BSF to this dataset later in the tutorial.</p>
+<p><br></p>
+<div style="text-align: left;">
+<div class="figure">
+<img src="websitemainpage_files/figure-html/unnamed-chunk-1-1.png" alt="Figure 3: Top panel: Hermit thrush. Taken by Matt MacGillivray of the Cornell Lab of Ornithology. Bottom panel: Presence and absence of hermit thrush in the 4,937 blocks in Pennsylvania" width="75%" />
+<p class="caption">
+Figure 3: Top panel: Hermit thrush. Taken by Matt MacGillivray of the
+Cornell Lab of Ornithology. Bottom panel: Presence and absence of hermit
+thrush in the 4,937 blocks in Pennsylvania
+</p>
+</div>
+</div>
+<p><br></p>
+<p>In this tutorial we will first present the BSF model and its
+advantages before demonstrating how to implement it by analyzing two
+datasets using R and Stan. We hope to make this powerful and beneficial
+method available to practitioners across disciplines.</p>
+<div id="previous-methods" class="section level3">
+<h3><a id="previous_methods"></a>Previous methods</h3>
+<p>A traditional approach to analyzing areal data is a Gaussian Markov
+random field model (GMRF) which has the linear predictor <span
+class="math inline">\(\textbf{X}(G)\boldsymbol{\beta} +
+\boldsymbol{\omega} (G)\)</span>. <span
+class="math inline">\(G=(V,E)\)</span> is the underlying graph which
+encodes the adjacency structure (edges of <span
+class="math inline">\(G\)</span>) among the areal units (nodes of <span
+class="math inline">\(G\)</span>) entailed in the study. <span
+class="math inline">\(\boldsymbol{\omega}=(\omega_1,...,\omega_n)&#39;\)</span>
+are the spatially dependent random effects, which capture the spatial
+dependence beyond what can be explained by the spatially structured
+covariates in the design matrix <span
+class="math inline">\(\textbf{X}\)</span>. <span
+class="math inline">\(\boldsymbol{\beta}\)</span> is the vector of
+parameters associated with the covariates.</p>
+<p>One specific example of a GMRF model is the conditional
+autoregressive (CAR) model given by <span
+class="math inline">\(\boldsymbol{\omega} (G) \sim{~}
+\mathcal{N}(\mathbf{0}, \textbf{Q}^{-1}/\tau)\)</span> where:</p>
+<ul>
+<li><span class="math inline">\(\tau\)</span> is a conditional precision
+parameter.</li>
+<li><span
+class="math inline">\(\textbf{Q}=\textbf{D}-\rho\textbf{A}\)</span> is a
+precision matrix.</li>
+<li><span class="math inline">\(\textbf{A} = (a_{ij}=1\{(i,j)\in
+E\})\)</span> is the adjacency matrix for <span
+class="math inline">\(G\)</span>.</li>
+<li><span class="math inline">\(\textbf{D} = \text{diag}(d_1,...,d_n) =
+\text{diag}(\textbf{A1})\)</span> is diagonal with the vertices of <span
+class="math inline">\(G\)</span> as its diagonal elements.</li>
+<li><span class="math inline">\(\rho \in [0,1)\)</span> is a range
+parameter where <span class="math inline">\(\rho = 0\)</span> implies
+spatial independence, and <span class="math inline">\(\rho\)</span>
+closer to 1 indicates stronger spatial dependence.</li>
+</ul>
+<p>Although the CAR model is thought of as intuitive and a sensible
+choice of model by many practitioners, there are several modeling issues
+that arise. First, when viewed as a marginal model for <span
+class="math inline">\(\boldsymbol{\omega}\)</span>, pathologies are
+exhibited. For example, the marginal dependence structure varies in a
+complicated fashion as the spatial parameter <span
+class="math inline">\(\rho\)</span> varies. Secondly the model has
+issues with spatial confounding due to perfect collinearity between
+<span class="math inline">\(\boldsymbol{\omega}\)</span> and <span
+class="math inline">\(\textbf{X}\)</span>. This issue causes the
+posterior for <span class="math inline">\({\boldsymbol{\beta}}\)</span>
+to be too dispersed and the estimator for <span
+class="math inline">\(\boldsymbol{\beta}\)</span> will exhibit bias.
+Third, the model can introduce an artifactual posterior spatial
+structure. Finally, the CAR random effects are high dimensional and have
+the potential to be strongly cross-correlated. This has the potential to
+lead to high computational costs.</p>
+<p>The CAR model also has several attributes that lead to slow
+computations. Because the coordinates of <span
+class="math inline">\(\boldsymbol{\omega}\)</span> can have substantial
+<span class="math inline">\(\textit{ a posteriori}\)</span> dependence,
+particularly when the spatial parameter <span
+class="math inline">\(\rho\)</span> is close to 1, sampling from the
+posterior distribution of <span
+class="math inline">\(\boldsymbol{\omega}\)</span> can lead to a very
+slow mixing Markov chain. <span
+class="math inline">\(\boldsymbol{\omega}\)</span> can be updated in
+blocks to avoid this issue, however creating the proposals for these
+updates is difficult and execution time per iteration increases although
+the mixing is faster. In addition, the computation of det(<span
+class="math inline">\(\textbf{Q}\)</span>) can be computationally
+burdensome. Although, this issue can be eased through numerical
+methods.</p>
+<p>There are several GMRF models similar to the CAR model which are also
+widely used, such as the ICAR (intrinsic CAR) and BYM models.</p>
+<p>Below we will outline the BSF model and demonstrate how it addresses
+the modeling and computational limitations of the GMRF models.</p>
+</div>
+</div>
+<div id="methodology" class="section level2">
+<h2><a id="methodology"></a>Methodology</h2>
+<p>In the Bayesian spatial filtering method we recast the linear
+predictor as <span
+class="math display">\[\textbf{X}(G)\boldsymbol{\beta}+\textbf{B
+}(G)\boldsymbol{\gamma}\]</span> where the second term is a basis
+expansion. <span class="math inline">\(\textbf{B}(G)_{n \times
+q}\)</span> is an <span class="math inline">\({n \times q}\)</span>
+matrix of spatially patterned basis functions and <span
+class="math inline">\(\boldsymbol{\gamma}\)</span> is a <span
+class="math inline">\(q\)</span> vector of basis coefficients.</p>
+<p><br> The choice of basis for this model is extremely important— a
+favorable basis choice has the advantage of allowing for efficient
+computing while avoiding modeling issues discussed above. This tutorial
+will use the basis choice of the Moran basis.</p>
+<div id="basis-representation" class="section level3">
+<h3><a id="basis_representation"></a>Basis representation</h3>
+<p>The underlying graph <span class="math inline">\(G\)</span> is used
+to create a basis for use in the expansion. The eigenvectors of <span
+class="math inline">\(M(G)\)</span> are appealing for this purpose,
+where <span class="math inline">\(M(G) = (\textbf{I} -
+\textbf{J}/\textit{n})\textbf{A}(\textbf{I} -
+\textbf{J}/\textit{n})\)</span>, where <span
+class="math inline">\(\textbf{I}\)</span> is the <span
+class="math inline">\(\textit{n} \times \textit{n}\)</span> identity
+matrix, <span class="math inline">\(\textbf{J}\)</span> is the <span
+class="math inline">\(\textit{n} \times \textit{n}\)</span> matrix of
+1s, and <span class="math inline">\(\textbf{A}\)</span> is the adjacency
+matrix for <span class="math inline">\(G\)</span>. This operator is
+present in Moran’s <span class="math inline">\(\textit{I}\)</span>,
+given by: <span class="math display">\[I(\textbf{A}, \textbf{Y}) =
+\frac{\textit{n}}{\textbf{1&#39;A1}}
+\frac{\textbf{Y}&#39;(\textbf{I}-\textbf{J}/\textit{n})
+\textbf{A}(\textbf{I}-\textbf{J}/\textit{n})\textbf{Y}}{\textbf{Y}&#39;(\textbf{I}-\textbf{J}/\textit{n})\textbf{Y}}\]</span>
+Moran’s <span class="math inline">\(\textit{I}\)</span> is a
+nonparametric measure of spatial dependence for areal data.</p>
+<p>The eigenvectors of this operator establish an orthogonal,
+multi-resolution spatial basis for <span
+class="math inline">\(C(\mathbf{1})^{\perp}\)</span>, where <span
+class="math inline">\(C(\cdot)\)</span> denotes the column space and
+<span class="math inline">\(\perp\)</span> signifies the orthogonal
+complement. These eigenvectors of <span class="math inline">\(M\)</span>
+are orthogonal not only to the <span
+class="math inline">\(\mathbf{1}\)</span> vector but also to one
+another, each reflecting a distinct spatial pattern on <span
+class="math inline">\(G\)</span>. The standardized spectrum of <span
+class="math inline">\(M\)</span> encompasses all potential values for
+Moran’s <span class="math inline">\(I\)</span>, while the eigenvectors
+represent all mutually exclusive clustering patterns that are residual
+to <span class="math inline">\(\mathbf{1}\)</span> and take <span
+class="math inline">\(G\)</span> into account.</p>
+<p>The eigenvalues of <span class="math inline">\(M\)</span> correspond
+to levels of spatial dependence— the positive and negative eigenvalues
+of <span class="math inline">\(M\)</span> correspond to positive or
+negative spatial dependence respectively. In addition to positive or
+negative, the eigenvalues represent varying degrees of special
+dependence. The eigenvectors associated with a given eigenvalue, for
+example <span class="math inline">\(\boldsymbol{\mu}_i\)</span>,
+represent the patterns of spatial clustering that data exhibit when the
+dependence among them is of degree <span
+class="math inline">\(\boldsymbol{\mu}_i\)</span>.</p>
+<div class="figure">
+<img src="capstonefig.png" alt="Figure 2: Graphs which exhibit large-, medium-, and small-scale spatial clustering, respectively." width="100%" />
+<p class="caption">
+Figure 2: Graphs which exhibit large-, medium-, and small-scale spatial
+clustering, respectively.
+</p>
+</div>
+<p><br> There are several ways in which one could choose the
+eigenvectors to include in <span
+class="math inline">\(\textbf{B}\)</span>. In this tutorial we will
+include the first <span class="math inline">\(\textit{q}\)</span> Moran
+basis vectors in a Bayesian model which has linear predictor <span
+class="math inline">\(\textbf{X} \boldsymbol{\beta} +
+\textbf{B}\boldsymbol{\gamma}\)</span>. MCMC for Bayesian inference is
+then done with these vectors. The model with the choice of <span
+class="math inline">\(\textit{q}\)</span> that yields the smallest value
+for an information criteria such as LOOIC is the best candidate.</p>
+<p>Although we will use exclusively attractive basis vectors, since
+spatial clustering is more common than spatial repulsion, it is possible
+that some applications will benefit from the inclusion of repulsive
+vectors.</p>
+<p>While the formula for the Moran operator <span
+class="math inline">\(M(G) = (\textbf{I} -
+\textbf{J}/\textit{n})\textbf{A}(\textbf{I} -
+\textbf{J}/\textit{n})\)</span> is relatively efficient for small
+datasets, it may be beneficial to use the following method for large
+datasets, which speeds the computation significantly: <span
+class="math display">\[(\textbf{I}-\textbf{J}/\textit{n})
+\textbf{A}(\textbf{I}-\textbf{J}/\textit{n})
+=  \textbf{A}-\textbf{D}/\textit{n}-\textbf{D}&#39;/\textit{n}+\textbf{E}/\textit{n}^2\]</span></p>
+<p>where each row of <span class="math inline">\(\textbf{D}\)</span>
+contains the degrees of the vertices (i.e. row sums or column sums of
+<span class="math inline">\(\textbf{A}\)</span>). Each element of <span
+class="math inline">\(\textbf{E}\)</span> is equal to <span
+class="math inline">\(\textbf{1&#39;A1}\)</span> (twice the number of
+edges). Since the eigenvectors of <span
+class="math inline">\(\textbf{A}\)</span> are available in closed form,
+due to it being a rectangular lattice, eigendecomposition can be
+avoided. The computed eigenvectors can then be projected onto <span
+class="math inline">\(C(\textbf{1})^{\bot}\)</span>. This does not
+create the Moran basis, however it can be used for the same purpose.</p>
+</div>
+<div id="modeling-and-computational-advantages" class="section level3">
+<h3><a id="modeling_and_comp"></a>Modeling and computational
+advantages</h3>
+<p>Both the computational and modeling limitations of the CAR model are
+addressed by the BSF model. BSF addresses the issue of computational
+costs by reducing the dimensionality of the latent variables and the
+cross-correlations, which in turn increases the speed of MCMC iterations
+and improves the mixing of the algorithm. BSF algorithms are thus a form
+of dimension-reduced reparameterization. Computational advantages
+additionally include dramatic dimension reduction. This is due to the
+fact that the spatial variation not present in <span
+class="math inline">\(\textbf{X}\)</span> can generally be explained by
+a small number of basis functions. This reduces both time and storage
+requirements. Additionally, the elements of <span
+class="math inline">\(\boldsymbol{\gamma}\)</span> are approximately
+uncorrelated in the posterior due to the orthogonality of the Moran
+basis. This characteristic enhances computational efficiency, enabling a
+straightforward spherical Gaussian proposal to be effective for updating
+<span class="math inline">\(\boldsymbol{\gamma}\)</span>.</p>
+<p><span class="math inline">\(\textbf{B}_\boldsymbol{\gamma}\)</span>
+has several modeling advantages over the GMRF model, including <span
+class="math inline">\(\textbf{B}_\boldsymbol{\gamma}\)</span>
+eliminating the marginal pathologies of <span
+class="math inline">\(\boldsymbol{\omega}\)</span>. It additionally
+alleviates the issue of spatial confounding. <span
+class="math inline">\(\textbf{B}_\boldsymbol{\gamma}\)</span> is also
+beneficial in that it allows for the exclusion of spatial repulsion by
+only including eigenvectors that exhibit spatial attraction in <span
+class="math inline">\(\textbf{B}\)</span>. Finally the BSF model
+typically yields more precise inference since the model is less
+confounded.</p>
+</div>
+<div id="prior-choices" class="section level3">
+<h3><a id="prior_choices"></a>Prior choices</h3>
+<p>The prior given to the regression coefficients <span
+class="math inline">\(\boldsymbol{\beta}\)</span> is a spherical
+Gaussian distribution <span class="math display">\[\boldsymbol{\beta}
+\sim \mathcal{N}(0,\sigma^2\textbf{I})\]</span> with mean 0 and a large
+variance such as <span class="math inline">\(\sigma = 1,000\)</span>.
+This is an independent Gaussian priors that is fairly uninformative due
+to the large variance.</p>
+<p>The prior for the basis coefficients <span
+class="math inline">\(\boldsymbol{\gamma}\)</span> is the graph
+Laplacian prior <span class="math display">\[\boldsymbol{\gamma} \sim
+\mathcal{N}\{ 0, \frac{1}{\tau}(\textbf{B&#39;LB})^{-1} \}\]</span>
+where <span
+class="math inline">\(\textbf{L}=\textbf{D}-\textbf{A}\)</span> is the
+graph Laplacian for <span class="math inline">\(G\)</span>. This prior
+is an advantageous choice for <span
+class="math inline">\(\boldsymbol{\gamma}\)</span> as it assigns a
+smaller variance to elements of <span
+class="math inline">\(\boldsymbol{\gamma}\)</span> that correspond to
+high frequency basis functions, smoothing small-scale patterns. This
+reduces overfitting. The correlation of the graph Laplacian prior
+additionally reduces the degrees of freedom in the smoothing component
+of the model. There are other potential options for the prior on <span
+class="math inline">\(\boldsymbol{\gamma}\)</span>, such as the
+regularized horseshoe prior.</p>
+<p>Finally the precision parameter <span
+class="math inline">\(\tau\)</span> is given a prior of <span
+class="math display">\[\tau \sim GAMMA(0.5, 2000)\]</span> The prior
+mean of 1,000 encodes the assumption that <span
+class="math inline">\(\textbf{X}\)</span> is sufficient for explaining
+the spatial variation exhibited by the response. This implies that <span
+class="math inline">\(\tau\)</span> will have a small posterior mean
+only if one or more columns of <span
+class="math inline">\(\textbf{B}\)</span> are necessary to explain <span
+class="math inline">\(y\)</span>— which again discourages
+overfitting.</p>
+</div>
+<div id="use-of-stan" class="section level3">
+<h3><a id="use_of_stan"></a>Use of Stan</h3>
+<p>Using Stan for BSF offers two key advantages over performing all
+modeling in R. Stan uses Hamiltonian Monte Carlo (HMC) which yields a
+chain that mixes significantly faster than a random walk chain that
+might be implemented in R, requiring a much shorter path. Stan is
+additionally very flexible, allowing BSF to be used in a variety of
+settings and on a variety of kinds of data.</p>
+</div>
+</div>
+<div id="dataset-analysis" class="section level2">
+<h2><a id="dataset_analysis"></a>Dataset analysis</h2>
+<p>We will now demonstrate Bayesian spatial filtering using two
+datasets: hermit thrush presence in Pennsylvania and infant mortality
+data from counties in the United States. Through these two datasets we
+will demonstrate how BSF can be implemented with two kinds of
+regression- logistic and Poisson, although of course there are many more
+possibilities.</p>
+<p>Generally, the process will be as follows: data preparation,
+computing the Moran operator, eigendecomposing, and post-processing will
+be done in R. Stan is used to specify the model and conduct sampling in
+conjunction with the cmdstanr package.</p>
+<div id="hermit-thrush-data" class="section level3">
+<h3><a id="hermit_thrush"></a>Hermit thrush data</h3>
+<p>We will first analyze the hermit thrush dataset described in the
+introduction. This dataset has the following coluumns:</p>
+<ul>
+<li><p>Thrush: The outcome variable. 1 if there is hermit thrush in that
+area, 0 otherwise.</p></li>
+<li><p>Cover: Spatially patterned explanatory variable telling us the
+percentage of the block having conifer or mixed cover.</p></li>
+<li><p>Elevation: Spatially patterned explanatory variable telling us
+the average elevation of the block.</p></li>
+<li><p>loc.x/loc.y: Coordinates for the blocks- these aren’t used in
+modeling but are useful for plotting.</p></li>
+</ul>
+<p>We will employ the logit link function so that <span
+class="math inline">\(logit\{\textbf{p}(G)\} =
+\textbf{X}(G)\boldsymbol{\beta}+\textbf{B}(G)\boldsymbol{\gamma}\)</span>
+where<br />
+<span class="math display">\[
+\textbf{p}(G) = P\{\textbf{X}(G)=1\mid \textbf{X}(G),
+\textbf{B}(G)\}=[\textbf{1}+\exp\{-\textbf{X}(G)\boldsymbol{\beta}
+-\textbf{B}(G)\boldsymbol{\gamma}\}]^{-1}
+\]</span>.</p>
+<div id="analyzing-the-hermit-thrush-data-using-r-and-stan"
+class="section level4">
+<h4><a id="analyzing_ht"></a>Analyzing the hermit thrush data using R
+and Stan</h4>
+<p><br> The first step in the data analysis is to complete
+pre-processing. First, load the packages necessary for the analysis. The
+package cmdstanr will be used to employ Stan, rspectra will be used to
+eigendecompose the Moran operator, loo will be used to perform
+leave-one-out cross validation, and CARBayes will be used to calculate
+the MCSE.</p>
+<pre class="r"><code>library(cmdstanr)   
+library(RSpectra)   
+library(loo)
+library(CARBayes)</code></pre>
+<p><br> Next we will read in and format the hermit thrush and adjacency
+data. Set <span class="math inline">\(y\)</span> equal to the outcome
+variable, thrush, and normalize the two explanatory variables cover and
+elevation. The design matrix <span
+class="math inline">\(\textbf{X}(G)\)</span> will contain a column of
+ones as well as the variables cover and elevation. In addition, we will
+initialize <span class="math inline">\(\textbf{A}\)</span>, an <span
+class="math inline">\(\textit{n} \times \textit{n}\)</span> matrix that
+is full of 0s. We will then use <span
+class="math inline">\(\textbf{A}\)</span> to build the adjacency matrix
+using a for loop that iterates through each line of the data. The end
+product is an adjacency matrix <span
+class="math inline">\(\textbf{A}\)</span> which represents a graph with
+<span class="math inline">\(\textit{n}\)</span> nodes. The entry <span
+class="math inline">\(\textbf{A}\)</span>[<span
+class="math inline">\(\textit{i}\)</span>,<span
+class="math inline">\(\textit{j}\)</span>] is equal to 1 if there is a
+connection between <span class="math inline">\(\textit{i}\)</span> and
+<span class="math inline">\(\textit{j}\)</span>, and is equal to 0
+otherwise.</p>
+<pre class="r"><code>thrush = read.csv(&quot;thrush_data.csv&quot;) # Read in the hermit thrush data 
+y = thrush$thrush
+cover = as.numeric(scale(thrush$cover))
+elevation = as.numeric(scale(thrush$elevation))
+n = length(y) # Set n = length of data 
+A = matrix(0,n,n)
+adj = readLines(&quot;thrush_adjacency.txt&quot;, n = -1)  # Read in the adjacency data
+for (i in 1:n)
+{
+    temp = as.numeric(strsplit(adj[[i]], &quot; &quot;)[[1]])
+    A[i, temp] = 1
+}</code></pre>
+<p><br> Set <span class="math inline">\(\textit{q}\)</span> equal to the
+number of attractive basis vectors we will include. We will run the
+model with <span class="math inline">\(\textit{q} =\)</span> 50, 100,
+200, and 400 and compare the results to see which yields the best
+performing model.</p>
+<pre class="r"><code>q = 400</code></pre>
+<p><br> Here we will build the substitute for the Moran operator, <span
+class="math inline">\(\textbf{A}-\textbf{D}/\textit{n}-\textbf{D}&#39;/\textit{n}+\textbf{E}/\textit{n}^2\)</span>.
+We will use this method due to its faster computation time.</p>
+<pre class="r"><code>s = colSums(A) 
+D = matrix(rep(s, n), n, n, byrow = TRUE) 
+E = matrix(sum(s), n, n)
+M = A - D / n - t(D) / n + E / n^2 # Use D and E to build substitute for the Moran operator</code></pre>
+<p><br> Obtain the first <span class="math inline">\(\textit{q}\)</span>
+eigenvectors of <span class="math inline">\(\textbf{M}\)</span> using
+the eig_sym() function from the RSpectra package and store the <span
+class="math inline">\(\textit{q}\)</span> basis functions as matrix
+<span class="math inline">\(\textbf{B}\)</span>, the basis we will use
+in our expansion.</p>
+<p>In addition we will construct <span
+class="math inline">\(\textbf{L}\)</span>, the graph Laplacian. The
+diag() function creates a diagonal matrix where each diagonal entry is
+the sum of the corresponding row in the adjacency matrix <span
+class="math inline">\(\textbf{A}\)</span>. Subtracting <span
+class="math inline">\(\textbf{A}\)</span> from this matrix results in
+the graph Laplacian.</p>
+<p>Finally, compute <span class="math inline">\(\textbf{V}\)</span> by
+solving the linear system defined. <span
+class="math inline">\(\textbf{V}/\tau\)</span> will become the prior
+covariance matrix for <span
+class="math inline">\(\boldsymbol{\gamma}\)</span>.</p>
+<pre class="r"><code>eig = eigs_sym(M, q)
+B = eig$vectors 
+L = diag(rowSums(A), n) - A
+V = solve(t(B) %*% L %*% B)</code></pre>
+<p><br> Next we will compile the Stan model (below) and draw the
+posterior samples. Run one MCMC chain with 10,000 samples drawn from the
+posterior distribution.<br />
+Save the posterior samples for all of the parameters in a dataframe.
+Dataframes are often convenient as they allow for easy data manipulation
+and visualization. Each column of this dataframe will correspond to a
+parameter, for example <span class="math inline">\(\beta_1\)</span>, and
+each row is one sample from the posterior.</p>
+<pre class="r"><code>mod = cmdstan_model(&quot;hermit_thrush_loo.stan&quot;) # Provide the path to the Stan file 
+fit = mod$sample(data = list(n = n, q = q, y = y, cover = cover, elevation = elevation,
+                 B = B, V = V, zero = rep(0, q)),
+                 chains = 1,                          
+                 iter_sampling = 10000,             
+                 refresh = 1000)
+samples = fit$draws(format = &quot;df&quot;)</code></pre>
+<div id="stan-code" class="section level5">
+<h5>Stan code</h5>
+<p>The code for the Stan model, broken down by section, is as
+follows:</p>
+<p>The data block defines the variables that will be provided to the
+model during fitting.</p>
+<pre class="stan"><code>data
+{
+    int&lt;lower=0&gt; n;   // sample size
+    int&lt;lower=0&gt; q;   // number of basis vectors
+  
+    array[n] int&lt;lower=0, upper=1&gt; y;   // binary outcomes
+    vector[n] cover;                    // predictor
+    vector[n] elevation;                // predictor
+    matrix[n, q] B;                     // basis vectors
+
+    matrix[q, q] V;   // V 
+    vector[q] zero;   // mean vector for the prior on gamma
+}</code></pre>
+<p><br> Define the parameters to be used in the model. This includes the
+intercept, the slopes for cover and elevation, the basis coefficients,
+and <span class="math inline">\(\tau\)</span> the smoothing parameter
+for the spatial prior.</p>
+<pre class="stan"><code>parameters
+{
+    real beta0;     // intercept    
+    real beta1;     // cover coefficient
+    real beta2;     // elevation coefficient
+    vector[q] gamma;  // basis coefficient 
+
+    real&lt;lower=0&gt; tau;    
+}</code></pre>
+<p><br> In this section we simply convert from precision to variance by
+defining <span class="math inline">\(\sigma^2\)</span> as the inverse of
+<span class="math inline">\(\tau\)</span>.</p>
+<pre class="stan"><code>transformed parameters
+{
+    real&lt;lower=0&gt; sigma_sq = inv(tau);  
+}</code></pre>
+<p><br> Here we define the logistic regression model. In addition we
+define the priors for the coefficients. We define the prior for <span
+class="math inline">\(\boldsymbol{\gamma}\)</span> as multinormal with
+mean zero and covariance <span class="math inline">\(\sigma^2 \times
+\textbf{V}\)</span>, equivalent to <span
+class="math inline">\(\textbf{V}/\tau\)</span>.</p>
+<p><span class="math inline">\(\tau\)</span> is given a prior of
+GAMMA(0.5, 2000).</p>
+<pre class="stan"><code>model
+{
+
+    y ~ bernoulli_logit(beta0 + beta1 * cover + beta2 * elevation + B * gamma);
+  
+    beta0 ~ normal(0, 1000);    
+    beta1 ~ normal(0, 1000);    
+    beta2 ~ normal(0, 1000);
+
+    gamma ~ multi_normal(zero, sigma_sq * V);
+    tau ~ gamma(0.5, 0.0005);
+}</code></pre>
+<p><br> Finally, we will compute the predicted probabilities. The
+inv_logit function is used to find the predicted probabilities <span
+class="math inline">\(\textit{p}\)</span> of the hermit thrush presence
+based on the fitted model and the for loop to computes the log
+likelihood for each observed data point.</p>
+<pre class="stan"><code>generated quantities
+{
+
+    vector[n] p = inv_logit(beta0 + beta1 * cover + beta2 * elevation + B * gamma);
+
+    vector[n] log_lik;
+    for (i in 1:n)
+        log_lik[i] = bernoulli_logit_lpmf(y[i] | beta0 + beta1 * cover[i] + beta2 * elevation[i] + B[i] * gamma);
+
+}</code></pre>
+<p>A quick note: A warning message may appear in the console while
+performing sampling from the posterior. As long as the code continues to
+run, this should not be an issue.</p>
+</div>
+<div id="post-processing" class="section level5">
+<h5>Post-Processing</h5>
+<p>Now that we have our samples from the posterior we can analyze the
+predictive performance for each of the models to see which value of
+<span class="math inline">\(\textit{q}\)</span> led to the best
+performing model. The following code performs leave-one-out cross
+validation (LOOCV) using the loo() function and calculates the
+information criterion LOOIC. This code can be ran for each model (<span
+class="math inline">\(q=\)</span> 50, 100, 200, 400) and compared. The
+results of this are presented in the results section.</p>
+<pre class="r"><code>options(mc.cores = parallel::detectCores())
+fit.1 = fit
+loo.1 = loo(fit.1$draws(&quot;log_lik&quot;), cores = 3)
+print(loo.1)</code></pre>
+<p>We can further analyze the results of our model (for example, using
+the <span class="math inline">\(\textit{q}=400\)</span> model) by
+investigating the estimated posterior means and 95 highest posterior
+density (HPD) intervals for the coefficients for the predictors.</p>
+<pre class="r"><code># Calculate the estimated posterior means using the mean() function
+mean(samples$beta0)
+mean(samples$beta1)
+mean(samples$beta2)
+
+# Finding the HPD intervals
+hpd = function(x, alpha = 0.05) # Function which calculates the HPD
+{
+  n = length(x)
+  m = round(n * alpha)
+  x = sort(x)
+  y = x[(n - m + 1):n] - x[1:m]
+  z = min(y)
+  k = which(y == z)[1]
+  c(x[k], x[n - m + k])
+}
+hpd(samples$beta0, alpha=0.05)
+hpd(samples$beta1, alpha=0.05)
+hpd(samples$beta2, alpha=0.05)</code></pre>
+<p>We can also use the hpd() function for the coefficients for the basis
+functions, a basis vector with an HPD interval that does not contain 0
+is considered significant.</p>
+<p>Lastly we can calculate the MCSE (Monte Carlo Standard Error) values.
+This can be done using the bm() function from the CARBayes package. This
+function calculates the MCMC standard error based on the consistent
+batch means estimator.</p>
+<pre class="r"><code>bm(samples$beta0) 
+bm(samples$beta1) 
+bm(samples$beta2)</code></pre>
+</div>
+</div>
+<div id="results" class="section level4">
+<h4><a id="results_1"></a>Results</h4>
+Below are the LOOIC values we calculated for each model. Lower values
+indicates better predictive performance.
+<table class=" lightable-classic table table-striped table-hover table-condensed table" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto; font-family: sans-serif; width: auto !important; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<caption>
+Table 1: Comparison of model performance
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+q
+</th>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+LOOIC
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;width: 15em; ">
+50
+</td>
+<td style="text-align:left;width: 10em; ">
+3243.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+100
+</td>
+<td style="text-align:left;width: 10em; ">
+3161.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+200
+</td>
+<td style="text-align:left;width: 10em; ">
+3107.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+400
+</td>
+<td style="text-align:left;width: 10em; ">
+3063.6
+</td>
+</tr>
+</tbody>
+</table>
+<p><br></p>
+<p>The model which used <span
+class="math inline">\(\textit{q}=400\)</span> performed the best with an
+LOOIC value of 3063.6. However, in some scenarios, it may be
+advantageous to chose a lower value of <span
+class="math inline">\(\textit{q}\)</span> and trade accuracy for speed
+of computation.</p>
+The following are the results for the <span
+class="math inline">\(q=400\)</span> model:<br />
+
+<table class=" lightable-classic table table-striped table-hover table-condensed table" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto; font-family: sans-serif; width: auto !important; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+Predictor
+</th>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+Estimated Posterior Mean
+</th>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+95% HPD Interval
+</th>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+MCSE
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Intercept
+</td>
+<td style="text-align:left;width: 10em; ">
+-1.257
+</td>
+<td style="text-align:left;width: 10em; ">
+(-1.414, -1.102)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0800
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Cover
+</td>
+<td style="text-align:left;width: 10em; ">
+0.053
+</td>
+<td style="text-align:left;width: 10em; ">
+(-0.050, 0.152)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0523
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Elevation
+</td>
+<td style="text-align:left;width: 10em; ">
+2.051
+</td>
+<td style="text-align:left;width: 10em; ">
+(1.813, 2.304)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.1246
+</td>
+</tr>
+</tbody>
+</table>
+<p>We see that the HPD interval for <span
+class="math inline">\(\beta_2\)</span>, elevation, is positive and does
+not contain 0, suggesting that elevation is a significant predictor of
+the presence of hermit thrush. As elevation increases, the probability
+of having hermit thrush presence increases. The cover variable, however,
+was not a significant predictor.</p>
+<p><br> In terms of the basis vectors, 37 of the 400 were significant,
+meaning the 95% HPD interval did not contain 0. Most of the important
+basis functions were in the first 50. The estimated mean surface for the
+<span class="math inline">\(q\)</span> = 400 fit is shown in the left
+panel of Figure 4. The right panel shows the posterior estimate of <span
+class="math inline">\(\textbf{B}\boldsymbol{\gamma}\)</span>. A lot of
+the spatial clustering found in the model can be accounted for by <span
+class="math inline">\(\textbf{B}\boldsymbol{\gamma}\)</span>.</p>
+<br>
+<div class="figure">
+<img src="capstonefig6.png" alt="Figure 3: Left panel: The estimated mean surface from the Bayesian filtering analysis of the hermit thursh data. Right panel: The estimated spatial random effects for the thrush data." width="1131" />
+<p class="caption">
+Figure 3: Left panel: The estimated mean surface from the Bayesian
+filtering analysis of the hermit thursh data. Right panel: The estimated
+spatial random effects for the thrush data.
+</p>
+</div>
+</div>
+</div>
+<div id="infant-mortality-data" class="section level3">
+<h3><a id="infant_mortality"></a>Infant mortality data</h3>
+<p>The second dataset which we will analyze includes infant mortality
+data for 3071 US counties. The 3-year average number of infant deaths,
+3-year average of live births, and 3-year average of low birth weight
+infants were collected from the 2008 area resource file. This is a
+county level database that is maintained by the Bureau of Health
+Professions, Health Resources, and Services Administration, US
+Department of Health and Human Services. The additional explanatory
+variables were collected from the 2000 US Census. The dataset has the
+following columns:</p>
+<ul>
+<li>Cofips: County FIPS code.</li>
+<li>Deaths: 3-year average of infant deaths.</li>
+<li>Births: 3- year average of infant births.</li>
+<li>Low_weight: 3-year average of low birth weight infants.</li>
+<li>Black: Percentage of black residents.</li>
+<li>Hispanic: Percentage of Hispanic residents.</li>
+<li>Gini: Gini coefficient, a measure of income inequality.</li>
+<li>Affluence: Composite score of social affluence.</li>
+<li>Stability: Residential stability, an average z-score of two
+variables from the 2000 census.</li>
+</ul>
+<p>As the outcome variable, deaths, is a count variable, we will use the
+Poisson regression model:</p>
+<p><span class="math display">\[
+\begin{align*}
+\text{Let } \lambda_i &amp; = \exp(\beta_0 + \beta_1 \cdot
+\text{low_weight}_i + \beta_2 \cdot \text{black}_i + \beta_3 \cdot
+\text{hispanic}_i \\
+&amp; \quad + \beta_4 \cdot \text{gini}_i + \beta_5 \cdot
+\text{affluence}_i + \beta_6 \cdot \text{stability}_i \\
+&amp; \quad + B \cdot \boldsymbol{\gamma}_i + \log(\text{births}_i) )\\
+y_i &amp; \sim \text{Poisson}(\lambda_i)
+\end{align*}
+\]</span> where <span
+class="math inline">\(\log(\text{births}_i)\)</span> is an offset term
+since the outcome variable is a count, not a rate, and thus must be
+adjusted.</p>
+<div id="analyzing-the-infant-mortality-data-using-r-and-stan"
+class="section level4">
+<h4><a id="analyzing_im"></a>Analyzing the infant mortality data using R
+and Stan</h4>
+<p>Load the necessary packages.</p>
+<pre class="r"><code>library(cmdstanr)    
+library(RSpectra)    
+library(loo)
+library(CARBayes)</code></pre>
+<p><br> Here we load the dataset and the adjacency matrix. Turn the
+variable low_weight into a rate with a denominator of the number of
+births. Set y equal to the outcome.</p>
+<pre class="r"><code>load(&quot;/Users/helenkeetley/Desktop/capstone_website/infant_data.RData&quot;)
+load(&quot;/Users/helenkeetley/Desktop/capstone_website/infant_adjacency.RData&quot;)
+n &lt;- nrow(infant)
+infant$low_weight = infant$low_weight / infant$births
+attach(infant)
+y = deaths</code></pre>
+<p><br> In this example we will run the model with <span
+class="math inline">\(\textit{q} =\)</span> 50, 100, 200, and 400 and
+compare the performance of the models.</p>
+<pre class="r"><code>q = 400 </code></pre>
+<p><br> Create <span class="math inline">\(\textbf{M}\)</span>, the
+substitute for the Moran operator.</p>
+<pre class="r"><code>s = colSums(A)
+D = matrix(rep(s, n), n, n, byrow = TRUE)
+E = matrix(sum(s), n, n)
+M = A - D / n - t(D) / n + E / n^2</code></pre>
+<p><br> Create the Graph Laplacian and solve for <span
+class="math inline">\(\textbf{B}\)</span>.</p>
+<pre class="r"><code>eig = eigs_sym(M, q)           
+B = eig$vectors               
+L = diag(rowSums(A), n) - A    
+V = solve(t(B) %*% L %*% B) </code></pre>
+<p><br> Compile the Stan document and specify the model. Store the
+results in a dataframe.</p>
+<pre class="r"><code>mod = cmdstan_model(&quot;/Users/helenkeetley/Desktop/capstone_website/infant_mortality.stan&quot;)
+fit = mod$sample(data = list(n = n, q = q, y = y, low_weight = low_weight, black = black, hispanic = hispanic, 
+                             gini = gini, affluence = affluence, stability = stability, births = births,
+                             B = B, V = V, zero = rep(0, q)),
+                 chains = 1,                         # Generate one sample path
+                 iter_sampling = 10000,              # of length 10,000.
+                 refresh = 1000)
+samples = fit$draws(format = &quot;df&quot;)</code></pre>
+<div id="stan-code-1" class="section level5">
+<h5>Stan code</h5>
+<p>The data section for the infant mortality dataset looks very similar
+than for the hermit thrush data, with the exception ensuring that y is
+set as a positive integer, rather than a binary variable.</p>
+<pre class="stan"><code>data
+{
+    int&lt;lower=0&gt; n;   // sample size
+    int&lt;lower=0&gt; q;   // number of basis vectors
+  
+    array[n] int&lt;lower=0&gt; y;   // outcome
+    vector[n] low_weight; 
+    vector[n] black; 
+    vector[n] hispanic; 
+    vector[n] gini; 
+    vector[n] affluence;  
+    vector[n] stability;  
+    vector[n] births;
+    
+    matrix[n, q] B;                     // basis vectors
+
+    matrix[q, q] V;   // V / tau is the prior covariance matrix for gamma
+    vector[q] zero;   // mean vector for the prior on gamma
+}</code></pre>
+<p><br> Again, the parameters and transformed paramters sections are
+very similar.</p>
+<pre class="stan"><code>parameters
+{
+    real beta0;         
+    real beta1;         
+    real beta2;
+    real beta3;
+    real beta4;
+    real beta5;
+    real beta6;
+    
+    vector[q] gamma;   
+
+    real&lt;lower=0&gt; tau;    
+}</code></pre>
+<p><br></p>
+<pre class="stan"><code>transformed parameters
+{
+    real&lt;lower=0&gt; sigma_sq = inv(tau);   // convert precision to variance
+}</code></pre>
+<p><br> Here is where the Stan code begins to differ significantly from
+the previous analysis. We chose to again use <span
+class="math inline">\(\mathcal{N}(0, 1000)\)</span> priors for all of
+the regression coefficients our model. The prior for <span
+class="math inline">\(\boldsymbol{\gamma}\)</span> is again multinormal
+with mean zero and covariance <span
+class="math inline">\(\textbf{B}/\tau\)</span>. For the Poisson model we
+define <span class="math inline">\(\eta\)</span> as our regression
+equation.</p>
+<pre class="stan"><code>model
+{
+    beta0 ~ normal(0, 1000);    
+    beta1 ~ normal(0, 1000);   
+    beta2 ~ normal(0, 1000);
+    beta3 ~ normal(0, 1000);   
+    beta4 ~ normal(0, 1000);   
+    beta5 ~ normal(0, 1000);
+    beta6 ~ normal(0, 1000);
+    
+    gamma ~ multi_normal(zero, sigma_sq * V);
+    tau ~ gamma(0.5, 0.0005);
+    
+    vector[n] eta;   
+    eta = beta0 + beta1 * low_weight + beta2 * black + beta3 * hispanic + 
+             beta4 * gini + beta5 * affluence + beta6 * stability + 
+             B * gamma + log(births);  
+
+     y ~ poisson_log(eta);
+}
+</code></pre>
+<p><br> Here we compute expected counts and calculate the log likelihood
+for each observation.</p>
+<pre class="stan"><code>generated quantities {
+    vector[n] lambda;  
+    vector[n] log_lik;  
+
+    lambda = exp(beta0 + beta1 * low_weight + beta2 * black + beta3 * hispanic + 
+                 beta4 * gini + beta5 * affluence + beta6 * stability + 
+                 B * gamma);
+
+    for (i in 1:n) {
+        log_lik[i] = poisson_log_lpmf(y[i] | log(lambda[i])); 
+    }
+}</code></pre>
+</div>
+</div>
+<div id="results-1" class="section level4">
+<h4><a id="results_2"></a>Results</h4>
+<p>After completing post-processing using the same functions as in the
+hermit thrush example we can compare the performance of the four models.
+Comparing the LOOIC values for each value of q we see that the model
+with <span class="math inline">\(q=50\)</span> was the best performing
+according to this information criteria.</p>
+<table class=" lightable-classic table table-striped table-hover table-condensed table" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto; font-family: sans-serif; width: auto !important; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<caption>
+Table 1: Comparison of model performance
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+q
+</th>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+LOOIC
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;width: 15em; ">
+50
+</td>
+<td style="text-align:left;width: 10em; ">
+425529.9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+100
+</td>
+<td style="text-align:left;width: 10em; ">
+426071.6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+200
+</td>
+<td style="text-align:left;width: 10em; ">
+426799.0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+400
+</td>
+<td style="text-align:left;width: 10em; ">
+427301.7
+</td>
+</tr>
+</tbody>
+</table>
+The results for the regression coefficients are as follows:
+<table class=" lightable-classic table table-striped table-hover table-condensed table" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto; font-family: sans-serif; width: auto !important; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+Predictor
+</th>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+Estimated Posterior Mean
+</th>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+95% HPD Interval
+</th>
+<th style="text-align:left;font-weight: bold;color: black !important;background-color: lightgray !important;">
+MCSE
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Intercept
+</td>
+<td style="text-align:left;width: 10em; ">
+-5.432
+</td>
+<td style="text-align:left;width: 10em; ">
+(-5.628, -5.250)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0022
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Low weight
+</td>
+<td style="text-align:left;width: 10em; ">
+8.807
+</td>
+<td style="text-align:left;width: 10em; ">
+(7.591, 10.065)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0101
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Black
+</td>
+<td style="text-align:left;width: 10em; ">
+0.004
+</td>
+<td style="text-align:left;width: 10em; ">
+(0.003, 0.006)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Hispanic
+</td>
+<td style="text-align:left;width: 10em; ">
+-0.004
+</td>
+<td style="text-align:left;width: 10em; ">
+(-0.005, 0.003)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Gini
+</td>
+<td style="text-align:left;width: 10em; ">
+-0.550
+</td>
+<td style="text-align:left;width: 10em; ">
+(-0.985, -0.114)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0049
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Affluence
+</td>
+<td style="text-align:left;width: 10em; ">
+-0.076
+</td>
+<td style="text-align:left;width: 10em; ">
+(-0.089, -0.064)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0001
+</td>
+</tr>
+<tr>
+<td style="text-align:left;width: 15em; ">
+Stability
+</td>
+<td style="text-align:left;width: 10em; ">
+-0.029
+</td>
+<td style="text-align:left;width: 10em; ">
+(-0.044, -0.014)
+</td>
+<td style="text-align:left;width: 10em; ">
+0.0001
+</td>
+</tr>
+</tbody>
+</table>
+<p>In our model the significant regression coefficients were low weight,
+black, affluence, gini, and stability. 6 of the 50 basis vectors were
+significant with 0 not contained in their HPD interval. The basis
+vectors that were significant, similarly to in the hermit thrush
+dataset, were generally earlier (the majority of them were among the
+first 30).</p>
+</div>
+</div>
+</div>
+<div id="conclusion" class="section level2">
+<h2><a id="conclusion"></a>Conclusion</h2>
+<p>In this tutorial we have shown how to use Bayesian spatial filtering
+to analyze two datasets involving spatial clustering. Specifically, we
+recast the linear predictor as <span
+class="math inline">\(\textbf{X}(G)\boldsymbol{\beta}+\textbf{B}(G)\boldsymbol{\gamma}\)</span>
+and for the second term chose the Moran basis to best alleviate modeling
+and computational issues. This method was fully implemented in R and
+Stan.</p>
+<p>BSF has substantial advantages over traditionally used GMRF models
+and can be regarded as an appealing alternative to GMFR models. BSF
+additionally is well-suited for recent advancements in spatial modeling,
+enabling the development of increasingly flexible (e.g. non-stationary,
+non-Gaussian, anisotropic) models while maintaining computational
+efficiency. Since basis representation models in general constitute a
+broad class of models, we have access to standard tools for model
+selection, including information criteria and reversible MCMC methods.
+This allows for a great deal of possibility for what BSF can be used
+for. Finally because BSF can be implemented with probabilistic
+programming languages such as Stan and NIMBLE, using this method is
+accessible to scientists who may not be computing experts.</p>
+<p>One notable limitation is that BSF can occasionally oversmooth,
+though this issue appears to be mostly confined to linear continuous
+domain settings.</p>
+</div>
+<div id="references" class="section level2">
+<h2><a id="references"></a>References</h2>
+<ul>
+<li>M. Haran, J. Hughes, and B. S. Lee. Latent Gaussian Models and
+Computation for Large Spatial Data. In S. Brooks, A. Gelman, G, Jones,
+and X.L. Meng, editors, <span class="math inline">\(\textit{Handbook of
+Markov Chian Monte Carlo}\)</span>, Handbook of Modern Statistical
+Methods. Chapman &amp; Hall/CRC, 2024.</li>
+<li>Morris, M. (2019). <span class="math inline">\(\textit{Spatial
+Models in Stan: Intrinsic Auto-Regressive Models for Areal
+Data}\)</span>. <a
+href="https://mc-stan.org/users/documentation/case-studies/icar_stan.html"
+class="uri">https://mc-stan.org/users/documentation/case-studies/icar_stan.html</a></li>
+</ul>
+<div id="r-packages" class="section level3">
+<h3>R Packages</h3>
+<ul>
+<li><a href="https://mc-stan.org/cmdstanr/">CmdStanR</a></li>
+<li><a
+href="https://cran.r-project.org/web/packages/RSpectra/index.html">RSpectra</a></li>
+<li><a
+href="https://cran.r-project.org/web/packages/loo/index.html">loo</a></li>
+<li><a
+href="https://cran.r-project.org/web/packages/CARBayes/index.html">CARBayes</a></li>
+</ul>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
