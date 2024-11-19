@@ -645,12 +645,12 @@ and Stan</h4>
 pre-processing. First, load the packages necessary for the analysis. The
 package cmdstanr will be used to employ Stan, rspectra will be used to
 eigendecompose the Moran operator, loo will be used to perform
-leave-one-out cross validation, and CARBayes will be used to calculate
+leave-one-out cross validation, and batchmeans will be used to calculate
 the Monte Carlo Standard Error (MCSE).</p>
 <pre class="r"><code>library(cmdstanr)   
 library(RSpectra)   
 library(loo)
-library(CARBayes)</code></pre>
+library(batchmeans)</code></pre>
 <p><br> Next we will read in and format the hermit thrush and adjacency
 data. Set <span class="math inline">\(y\)</span> equal to the outcome
 variable, thrush, and normalize the two explanatory variables cover and
@@ -850,8 +850,8 @@ hpd(samples$beta2, alpha=0.05)</code></pre>
 functions; a basis vector with an HPD interval that does not contain 0
 is considered significant.</p>
 <p>Lastly we can calculate the MCSE (Monte Carlo Standard Error) values.
-This can be done using the bm() function from the CARBayes package. This
-function calculates the MCMC standard error based on the consistent
+This can be done using the bm() function from the batchmeans package.
+This function calculates the MCMC standard error based on the consistent
 batch means estimator.</p>
 <pre class="r"><code>bm(samples$beta0) 
 bm(samples$beta1) 
@@ -1052,7 +1052,7 @@ and Stan</h4>
 <pre class="r"><code>library(cmdstanr)    
 library(RSpectra)    
 library(loo)
-library(CARBayes)</code></pre>
+library(batchmeans)</code></pre>
 <p><br> Here we load the dataset and the adjacency matrix. Turn the
 variable low_weight into a rate with a denominator of the number of
 births. Set <span class="math inline">\(y\)</span> equal to the
@@ -1415,7 +1415,7 @@ href="https://cran.r-project.org/web/packages/RSpectra/index.html">RSpectra</a><
 <li><a
 href="https://cran.r-project.org/web/packages/loo/index.html">loo</a></li>
 <li><a
-href="https://cran.r-project.org/web/packages/CARBayes/index.html">CARBayes</a></li>
+href="https://cran.r-project.org/web/packages/batchmeans/index.htmll">batchmeans</a></li>
 </ul>
 </div>
 </div>
@@ -1464,9 +1464,6 @@ $(document).ready(function () {
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>
-
-</body>
-</html>
 
 </body>
 </html>
