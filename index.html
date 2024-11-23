@@ -367,8 +367,8 @@ class="math inline">\(\boldsymbol{\beta}\)</span> is the vector of
 parameters associated with the covariates.</p>
 <p>One specific example of a GMRF model is the conditional
 autoregressive (CAR) model given by <span
-class="math inline">\(\boldsymbol{\omega} (G) \sim{~}
-\mathcal{N}(\mathbf{0}, \textbf{Q}^{-1}/\tau)\)</span> where:</p>
+class="math inline">\(\boldsymbol{\omega} (G) \sim{~} NORMAL(\mathbf{0},
+\textbf{Q}^{-1}/\tau)\)</span> where:</p>
 <ul>
 <li><span class="math inline">\(\tau\)</span> is a conditional precision
 parameter.</li>
@@ -564,14 +564,14 @@ confounded.</p>
 <p>The prior given to the regression coefficients <span
 class="math inline">\(\boldsymbol{\beta}\)</span> is a spherical
 Gaussian distribution <span class="math display">\[\boldsymbol{\beta}
-\sim \mathcal{N}(0,\sigma^2\textbf{I})\]</span> with mean 0 and a large
-variance such as <span class="math inline">\(\sigma = 1,000\)</span>.
-This is an independent Gaussian priors that is fairly uninformative due
-to the large variance.</p>
+\sim NORMAL(\mathbf{0},\sigma^2\textbf{I})\]</span> with mean 0 and a
+large variance such as <span class="math inline">\(\sigma =
+1,000\)</span>. This is an independent Gaussian priors that is fairly
+uninformative due to the large variance.</p>
 <p>The prior for the basis coefficients <span
 class="math inline">\(\boldsymbol{\gamma}\)</span> is the graph
 Laplacian prior <span class="math display">\[\boldsymbol{\gamma} \sim
-\mathcal{N}\{ 0, \frac{1}{\tau}(\textbf{B&#39;LB})^{-1} \}\]</span>
+NORMAL\{ \mathbf{0}, \frac{1}{\tau}(\textbf{B&#39;LB})^{-1} \}\]</span>
 where <span
 class="math inline">\(\textbf{L}=\textbf{D}-\textbf{A}\)</span> is the
 graph Laplacian for <span class="math inline">\(G\)</span>. This prior
@@ -633,7 +633,7 @@ class="math inline">\(logit\{\textbf{p}(G)\} =
 \textbf{X}(G)\boldsymbol{\beta}+\textbf{B}(G)\boldsymbol{\gamma}\)</span>
 where<br />
 <span class="math display">\[
-\textbf{p}(G) = P\{\textbf{X}(G)=1\mid \textbf{X}(G),
+\textbf{p}(G) = P\{\textbf{Y}(G)=1\mid \textbf{X}(G),
 \textbf{B}(G)\}=[\textbf{1}+\exp\{-\textbf{X}(G)\boldsymbol{\beta}
 -\textbf{B}(G)\boldsymbol{\gamma}\}]^{-1}
 \]</span></p>
@@ -689,13 +689,13 @@ model with <span class="math inline">\(\textit{q} =\)</span> 50, 100,
 200, and 400 and compare the results to see which yields the best
 performing model.</p>
 <pre class="r"><code>q = 400</code></pre>
-<p><br> Here we will build the substitute for the Moran operator, <span
+<p><br> Here we will build the Moran operator, <span
 class="math inline">\(\textbf{A}-\textbf{D}/\textit{n}-\textbf{D}&#39;/\textit{n}+\textbf{E}/\textit{n}^2\)</span>.
 We will use this method due to its faster computation time.</p>
 <pre class="r"><code>s = colSums(A) 
 D = matrix(rep(s, n), n, n, byrow = TRUE) 
 E = matrix(sum(s), n, n)
-M = A - D / n - t(D) / n + E / n^2 # Use D and E to build substitute for the Moran operator</code></pre>
+M = A - D / n - t(D) / n + E / n^2 # Use D and E to build the Moran operator</code></pre>
 <p><br> Obtain the first <span class="math inline">\(\textit{q}\)</span>
 eigenvectors of <span class="math inline">\(\textbf{M}\)</span> using
 the eig_sym() function from the RSpectra package and store the <span
@@ -1068,7 +1068,7 @@ class="math inline">\(\textit{q} =\)</span> 50, 100, 200, and 400 and
 compare the performance of the models.</p>
 <pre class="r"><code>q = 400 </code></pre>
 <p><br> Create <span class="math inline">\(\textbf{M}\)</span>, the
-substitute for the Moran operator.</p>
+Moran operator.</p>
 <pre class="r"><code>s = colSums(A)
 D = matrix(rep(s, n), n, n, byrow = TRUE)
 E = matrix(sum(s), n, n)
