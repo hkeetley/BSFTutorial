@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 
 <html>
 
@@ -323,12 +324,12 @@ miles). The data is dichotomous— a dark square corresponds to presence
 of hermit thrush while a light square indicates that there is no hermit
 thrush within that square.</p>
 <p>The underlying graph for this dataset is a square lattice, and (<span
-class="math inline">\(\textit{i}\)</span>, <span
-class="math inline">\(\textit{j}\)</span>) ∈ E iff blocks <span
-class="math inline">\(\textit{i}\)</span> and <span
-class="math inline">\(\textit{j}\)</span> share a boundary. The hermit
-thrush data exhibit positive spatial dependence on several scales. We
-will apply BSF to this dataset later in the tutorial.</p>
+class="math inline">\(i\)</span>, <span
+class="math inline">\(j\)</span>) ∈ E iff blocks <span
+class="math inline">\(i\)</span> and <span
+class="math inline">\(j\)</span> share a boundary. The hermit thrush
+data exhibit positive spatial dependence on several scales. We will
+apply BSF to this dataset later in the tutorial.</p>
 <p><br></p>
 <div style="text-align: left;">
 <div class="figure">
@@ -350,17 +351,17 @@ method available to practitioners across disciplines.</p>
 <p>A traditional approach to analyzing areal data is a Gaussian Markov
 random field model (GMRF) which has the linear predictor <span
 class="math inline">\(\textbf{X}(G)\boldsymbol{\beta} +
-\boldsymbol{\omega} (G)\)</span>. <span
-class="math inline">\(G=(V,E)\)</span> is the underlying graph with
-vertices <span class="math inline">\(V = 1,..n\)</span> and edges <span
+\boldsymbol{\omega} (G)\)</span>. <span class="math inline">\(G=(V,
+E)\)</span> is the underlying graph with vertices <span
+class="math inline">\(V = 1,..n\)</span> and edges <span
 class="math inline">\(E\)</span>. <span class="math inline">\(G\)</span>
 encodes the adjacency structure (edges of <span
 class="math inline">\(G\)</span>) among the areal units (nodes of <span
-class="math inline">\(G\)</span>) entailed in the study. <span
+class="math inline">\(G\)</span>) entailed in the study. The spatial
+random effects <span
 class="math inline">\(\boldsymbol{\omega}(G)=(\omega_1,...,\omega_n)&#39;\)</span>
-are the spatially dependent random effects, which capture the spatial
-dependence beyond what can be explained by the spatially structured
-covariates in the design matrix <span
+capture the spatial dependence beyond what can be explained by the
+spatially structured covariates in the design matrix <span
 class="math inline">\(\textbf{X}\)</span>. <span
 class="math inline">\(\boldsymbol{\beta}\)</span> is the vector of
 parameters associated with the covariates.</p>
@@ -378,11 +379,12 @@ precision matrix.</li>
 E\})\)</span> is the adjacency matrix for <span
 class="math inline">\(G\)</span>.</li>
 <li><span class="math inline">\(\textbf{D} = \text{diag}(d_1,...,d_n) =
-\text{diag}(\textbf{A1})\)</span> is diagonal with the vertices of <span
-class="math inline">\(G\)</span> as its diagonal elements.</li>
+\text{diag}(\textbf{A1})\)</span> is diagonal with its diagonal elements
+being the degrees of the vertices of <span
+class="math inline">\(G\)</span>.</li>
 <li><span class="math inline">\(\rho \in [0,1)\)</span> is a range
 parameter where <span class="math inline">\(\rho = 0\)</span> implies
-spatial independence, and <span class="math inline">\(\rho\)</span>
+spatial independence and <span class="math inline">\(\rho\)</span>
 closer to 1 indicates stronger spatial dependence.</li>
 </ul>
 <p>Although the CAR model is thought of as intuitive and a sensible
@@ -405,10 +407,9 @@ lead to high computational costs.</p>
 <p>The CAR model also has several attributes that lead to slow
 computations. Because the coordinates of <span
 class="math inline">\(\boldsymbol{\omega}\)</span> can have substantial
-<span class="math inline">\(\textit{ a posteriori}\)</span> dependence,
-particularly when the spatial parameter <span
-class="math inline">\(\rho\)</span> is close to 1, sampling from the
-posterior distribution of <span
+<i>a posteriori</i> dependence, particularly when the spatial parameter
+<span class="math inline">\(\rho\)</span> is close to 1, sampling from
+the posterior distribution of <span
 class="math inline">\(\boldsymbol{\omega}\)</span> can lead to a very
 slow mixing Markov chain. <span
 class="math inline">\(\boldsymbol{\omega}\)</span> can be updated in
@@ -445,21 +446,20 @@ Moran basis.</p>
 to create a basis for use in the expansion. The eigenvectors of <span
 class="math inline">\(M(G)\)</span> are appealing for this purpose.
 <span class="math inline">\(M(G) = (\textbf{I} -
-\textbf{J}/\textit{n})\textbf{A}(\textbf{I} -
-\textbf{J}/\textit{n})\)</span> where <span
+\textbf{J}/n)\textbf{A}(\textbf{I} - \textbf{J}/n)\)</span> where <span
 class="math inline">\(\textbf{I}\)</span> is the <span
-class="math inline">\(\textit{n} \times \textit{n}\)</span> identity
-matrix, <span class="math inline">\(\textbf{J}\)</span> is the <span
-class="math inline">\(\textit{n} \times \textit{n}\)</span> matrix of
-1s, and <span class="math inline">\(\textbf{A}\)</span> is the adjacency
-matrix for <span class="math inline">\(G\)</span>. This operator is
-present in Moran’s <span class="math inline">\(\textit{I}\)</span>,
-given by: <span class="math display">\[I(\textbf{A}, \textbf{Y}) =
-\frac{\textit{n}}{\textbf{1&#39;A1}}
-\frac{\textbf{Y}&#39;(\textbf{I}-\textbf{J}/\textit{n})
-\textbf{A}(\textbf{I}-\textbf{J}/\textit{n})\textbf{Y}}{\textbf{Y}&#39;(\textbf{I}-\textbf{J}/\textit{n})\textbf{Y}}\]</span>
-Moran’s <span class="math inline">\(\textit{I}\)</span> is a
-nonparametric measure of spatial dependence for areal data.</p>
+class="math inline">\(n \times n\)</span> identity matrix, <span
+class="math inline">\(\textbf{J}\)</span> is the <span
+class="math inline">\(n \times n\)</span> matrix of 1s, and <span
+class="math inline">\(\textbf{A}\)</span> is the adjacency matrix for
+<span class="math inline">\(G\)</span>. This operator is present in
+Moran’s <span class="math inline">\(I\)</span>, given by: <span
+class="math display">\[I(\textbf{A}, \textbf{Y}) =
+\frac{n}{\textbf{1&#39;A1}}
+\frac{\textbf{Y}&#39;(\textbf{I}-\textbf{J}/n)
+\textbf{A}(\textbf{I}-\textbf{J}/n)\textbf{Y}}{\textbf{Y}&#39;(\textbf{I}-\textbf{J}/n)\textbf{Y}}\]</span>
+Moran’s <span class="math inline">\(I\)</span> is a nonparametric
+measure of spatial dependence for areal data.</p>
 <p>The eigenvectors of this operator establish an orthogonal,
 multi-resolution spatial basis for <span
 class="math inline">\(C(\mathbf{1})^{\perp}\)</span>, where <span
@@ -495,26 +495,25 @@ clustering, respectively.
 <p><br> There are several ways one could choose the eigenvectors to
 include in <span class="math inline">\(\textbf{B}\)</span>. In this
 tutorial we will include the first <span
-class="math inline">\(\textit{q}\)</span> Moran basis vectors in a
-Bayesian model which has linear predictor <span
-class="math inline">\(\textbf{X} \boldsymbol{\beta} +
-\textbf{B}\boldsymbol{\gamma}\)</span>. MCMC for Bayesian inference is
-then done with these vectors. The model with the choice of <span
-class="math inline">\(\textit{q}\)</span> that yields the smallest value
-for an information criteria such as LOOIC is the best candidate.</p>
+class="math inline">\(q\)</span> Moran basis vectors in a Bayesian model
+which has linear predictor <span class="math inline">\(\textbf{X}
+\boldsymbol{\beta} + \textbf{B}\boldsymbol{\gamma}\)</span>. MCMC for
+Bayesian inference is then done with these vectors. The model with the
+choice of <span class="math inline">\(q\)</span> that yields the
+smallest value for an information criteria such as LOOIC is the best
+candidate.</p>
 <p>Although we will use exclusively attractive basis vectors, since
 spatial clustering is more common than spatial repulsion, it is possible
 that some applications will benefit from the inclusion of repulsive
 vectors.</p>
 <p>While the formula for the Moran operator <span
 class="math inline">\(M(G) = (\textbf{I} -
-\textbf{J}/\textit{n})\textbf{A}(\textbf{I} -
-\textbf{J}/\textit{n})\)</span> is relatively efficient for small
-datasets, it may be beneficial to use the following method for large
-datasets, which speeds the computation significantly: <span
-class="math display">\[(\textbf{I}-\textbf{J}/\textit{n})
-\textbf{A}(\textbf{I}-\textbf{J}/\textit{n})
-=  \textbf{A}-\textbf{D}/\textit{n}-\textbf{D}&#39;/\textit{n}+\textbf{E}/\textit{n}^2\]</span></p>
+\textbf{J}/n)\textbf{A}(\textbf{I} - \textbf{J}/n)\)</span> is
+relatively efficient for small datasets, it may be beneficial to use the
+following method for large datasets, which speeds the computation
+significantly: <span class="math display">\[(\textbf{I}-\textbf{J}/n)
+\textbf{A}(\textbf{I}-\textbf{J}/n)
+=  \textbf{A}-\textbf{D}/n-\textbf{D}&#39;/n+\textbf{E}/n^2\]</span></p>
 <p>where each row of <span class="math inline">\(\textbf{D}\)</span>
 contains the degrees of the vertices (i.e. row sums or column sums of
 <span class="math inline">\(\textbf{A}\)</span>). Each element of <span
@@ -565,7 +564,7 @@ class="math inline">\(\boldsymbol{\beta}\)</span> is a spherical
 Gaussian distribution <span class="math display">\[\boldsymbol{\beta}
 \sim NORMAL(\mathbf{0},\sigma^2\textbf{I})\]</span> with mean 0 and a
 large variance such as <span class="math inline">\(\sigma =
-1,000\)</span>. This is an independent Gaussian priors that is fairly
+1,000\)</span>. This is an independent Gaussian prior that is fairly
 uninformative due to the large variance.</p>
 <p>The prior for the basis coefficients <span
 class="math inline">\(\boldsymbol{\gamma}\)</span> is the graph
@@ -632,7 +631,7 @@ class="math inline">\(logit\{\textbf{p}(G)\} =
 \textbf{X}(G)\boldsymbol{\beta}+\textbf{B}(G)\boldsymbol{\gamma}\)</span>
 where<br />
 <span class="math display">\[
-\textbf{p}(G) = P\{\textbf{Y}(G)=1\mid \textbf{X}(G),
+\textbf{p}(G) = \mathbb{P}\{\textbf{Y}(G)=1\mid \textbf{X}(G),
 \textbf{B}(G)\}=[\textbf{1}+\exp\{-\textbf{X}(G)\boldsymbol{\beta}
 -\textbf{B}(G)\boldsymbol{\gamma}\}]^{-1}
 \]</span></p>
@@ -657,19 +656,17 @@ elevation. The design matrix <span
 class="math inline">\(\textbf{X}(G)\)</span> will contain a column of
 ones as well as the variables cover and elevation. In addition, we will
 initialize <span class="math inline">\(\textbf{A}\)</span>, an <span
-class="math inline">\(\textit{n} \times \textit{n}\)</span> matrix that
-is full of 0s. We will then use <span
-class="math inline">\(\textbf{A}\)</span> to build the adjacency matrix
-using a for loop that iterates through each line of the data. The end
-product is an adjacency matrix <span
+class="math inline">\(n \times n\)</span> matrix that is full of 0s. We
+will then use <span class="math inline">\(\textbf{A}\)</span> to build
+the adjacency matrix using a for loop that iterates through each line of
+the data. The end product is an adjacency matrix <span
 class="math inline">\(\textbf{A}\)</span> which represents a graph with
-<span class="math inline">\(\textit{n}\)</span> nodes. The entry <span
+<span class="math inline">\(n\)</span> nodes. The entry <span
 class="math inline">\(\textbf{A}\)</span>[<span
-class="math inline">\(\textit{i}\)</span>,<span
-class="math inline">\(\textit{j}\)</span>] is equal to 1 if there is a
-connection between <span class="math inline">\(\textit{i}\)</span> and
-<span class="math inline">\(\textit{j}\)</span>, and is equal to 0
-otherwise.</p>
+class="math inline">\(i\)</span>,<span class="math inline">\(j\)</span>]
+is equal to 1 if there is a connection between <span
+class="math inline">\(i\)</span> and <span
+class="math inline">\(j\)</span>, and is equal to 0 otherwise.</p>
 <pre class="r"><code>thrush = read.csv(&quot;thrush_data.csv&quot;) # Read in the hermit thrush data 
 y = thrush$thrush
 cover = as.numeric(scale(thrush$cover))
@@ -682,25 +679,24 @@ for (i in 1:n)
     temp = as.numeric(strsplit(adj[[i]], &quot; &quot;)[[1]])
     A[i, temp] = 1
 }</code></pre>
-<p><br> Set <span class="math inline">\(\textit{q}\)</span> equal to the
-number of attractive basis vectors we will include. We will run the
-model with <span class="math inline">\(\textit{q} =\)</span> 50, 100,
-200, and 400 and compare the results to see which yields the best
-performing model.</p>
+<p><br> Set <span class="math inline">\(q\)</span> equal to the number
+of attractive basis vectors we will include. We will run the model with
+<span class="math inline">\(q\)</span> = 50, 100, 200, and 400 and
+compare the results to see which yields the best performing model.</p>
 <pre class="r"><code>q = 400</code></pre>
 <p><br> Here we will build the Moran operator, <span
-class="math inline">\(\textbf{A}-\textbf{D}/\textit{n}-\textbf{D}&#39;/\textit{n}+\textbf{E}/\textit{n}^2\)</span>.
+class="math inline">\(\textbf{A}-\textbf{D}/n-\textbf{D}&#39;/n+\textbf{E}/n^2\)</span>.
 We will use this method due to its faster computation time.</p>
 <pre class="r"><code>s = colSums(A) 
 D = matrix(rep(s, n), n, n, byrow = TRUE) 
 E = matrix(sum(s), n, n)
 M = A - D / n - t(D) / n + E / n^2 # Use D and E to build the Moran operator</code></pre>
-<p><br> Obtain the first <span class="math inline">\(\textit{q}\)</span>
+<p><br> Obtain the first <span class="math inline">\(q\)</span>
 eigenvectors of <span class="math inline">\(\textbf{M}\)</span> using
 the eig_sym() function from the RSpectra package and store the <span
-class="math inline">\(\textit{q}\)</span> basis functions as matrix
-<span class="math inline">\(\textbf{B}\)</span>, the basis we will use
-in our expansion.</p>
+class="math inline">\(q\)</span> basis functions as matrix <span
+class="math inline">\(\textbf{B}\)</span>, the basis we will use in our
+expansion.</p>
 <p>In addition we will construct <span
 class="math inline">\(\textbf{L}\)</span>, the graph Laplacian. The
 diag() function creates a diagonal matrix where each diagonal entry is
@@ -771,8 +767,8 @@ defining <span class="math inline">\(\sigma^2\)</span> as the inverse of
 {
     real&lt;lower=0&gt; sigma_sq = inv(tau);  
 }</code></pre>
-<p><br> Here we define the logistic regression model. In addition we
-define the prior distributions. We define the prior for <span
+<p><br> Here we define the logistic regression model in addition to
+defining the prior distributions. We define the prior for <span
 class="math inline">\(\boldsymbol{\gamma}\)</span> as multinormal with
 mean zero and covariance <span class="math inline">\(\sigma^2 \times
 \textbf{V}\)</span>, equivalent to <span
@@ -791,9 +787,9 @@ class="math inline">\(\textbf{V}/\tau\)</span>.</p>
 }</code></pre>
 <p><br> Finally, we will compute the predicted probabilities. The
 inv_logit function is used to find the predicted probabilities <span
-class="math inline">\(\textit{p}\)</span> of the hermit thrush presence
-based on the fitted model and the for loop to computes the log
-likelihood for each observed data point.</p>
+class="math inline">\(p\)</span> of hermit thrush presence based on the
+fitted model and the for loop to computes the log likelihood for each
+observed data point.</p>
 <pre class="stan"><code>generated quantities
 {
 
@@ -812,20 +808,20 @@ run, this should not be an issue.</p>
 <h5>Post-Processing</h5>
 <p>Now that we have our samples from the posterior we can analyze the
 predictive performance for each of the models to see which value of
-<span class="math inline">\(\textit{q}\)</span> led to the best
-performing model. The following code performs leave-one-out cross
-validation (LOOCV) using the loo() function and calculates the
-information criterion LOOIC. This code can be ran for each model (<span
-class="math inline">\(q=\)</span> 50, 100, 200, 400) and compared. The
-results of this are presented in the results section.</p>
+<span class="math inline">\(q\)</span> led to the best performing model.
+The following code performs leave-one-out cross validation (LOOCV) using
+the loo() function and calculates the information criterion LOOIC. This
+code can be ran for each model (<span class="math inline">\(q=\)</span>
+50, 100, 200, 400) and compared. The results of this are presented in
+the results section.</p>
 <pre class="r"><code>options(mc.cores = parallel::detectCores())
 fit.1 = fit
 loo.1 = loo(fit.1$draws(&quot;log_lik&quot;), cores = 3)
 print(loo.1)</code></pre>
-<p>We can further analyze the results of our model (for example, using
-the <span class="math inline">\(\textit{q}=400\)</span> model) by
-investigating the estimated posterior means and 95% highest posterior
-density (HPD) intervals for the coefficients for the predictors.</p>
+<p>We can further analyze our model (for example, using the <span
+class="math inline">\(q=400\)</span> model) by investigating the
+estimated posterior means and 95% highest posterior density (HPD)
+intervals for the predictor coefficients.</p>
 <pre class="r"><code># Calculate the estimated posterior means using the mean() function
 mean(samples$beta0)
 mean(samples$beta1)
@@ -846,8 +842,8 @@ hpd(samples$beta0, alpha=0.05)
 hpd(samples$beta1, alpha=0.05)
 hpd(samples$beta2, alpha=0.05)</code></pre>
 <p>We can also use the hpd() function for the coefficients for the basis
-functions; a basis vector with an HPD interval that does not contain 0
-is considered significant.</p>
+functions; a basis vector with a HPD interval that does not contain 0 is
+considered significant.</p>
 <p>Lastly we can calculate the MCSE (Monte Carlo Standard Error) values.
 This can be done using the bm() function from the batchmeans package.
 This function calculates the MCMC standard error based on the consistent
@@ -908,12 +904,11 @@ LOOIC
 </tbody>
 </table>
 <p><br></p>
-<p>The model which used <span
-class="math inline">\(\textit{q}=400\)</span> performed the best with an
-LOOIC value of 3063.6. However, in some scenarios, it may be
-advantageous to chose a lower value of <span
-class="math inline">\(\textit{q}\)</span> and trade accuracy for speed
-of computation.</p>
+<p>The model which used <span class="math inline">\(q=400\)</span>
+performed the best with an LOOIC value of 3063.6. However, in some
+scenarios, it may be advantageous to chose a lower value of <span
+class="math inline">\(q\)</span> and trade accuracy for speed of
+computation.</p>
 The following are the results for the <span
 class="math inline">\(q=400\)</span> model:<br />
 
@@ -994,31 +989,30 @@ the spatial clustering found in the model can be accounted for by <span
 class="math inline">\(\textbf{B}\boldsymbol{\gamma}\)</span>.</p>
 <br>
 <div class="figure">
-<img src="capstonefig6.png" alt="Figure 3: Left panel: The estimated mean surface from the Bayesian filtering analysis of the hermit thrush data. Right panel: The estimated spatial random effects for the thrush data." width="1131" />
+<img src="capstonefig6.png" alt="Figure 3: Left panel: The estimated mean surface from the Bayesian spatial filtering analysis of the hermit thrush data. Right panel: The estimated spatial random effects for the thrush data." width="1131" />
 <p class="caption">
 Figure 3: Left panel: The estimated mean surface from the Bayesian
-filtering analysis of the hermit thrush data. Right panel: The estimated
-spatial random effects for the thrush data.
+spatial filtering analysis of the hermit thrush data. Right panel: The
+estimated spatial random effects for the thrush data.
 </p>
 </div>
 </div>
 </div>
 <div id="infant-mortality-data" class="section level3">
 <h3><a id="infant_mortality"></a>Infant mortality data</h3>
-<p>The second dataset which we will analyze includes infant mortality
-data for 3071 US counties. The 3-year average number of infant deaths,
-3-year average of live births, and 3-year average of low birth weight
-infants were collected from the 2008 area resource file. This is a
-county level database that is maintained by the Bureau of Health
-Professions, Health Resources, and Services Administration, US
-Department of Health and Human Services. The additional explanatory
-variables were collected from the 2000 US Census. The dataset has the
-following columns:</p>
+<p>The second dataset we will analyze includes infant mortality data for
+3071 US counties. The 3-year average number of infant deaths, 3-year
+average of live births, and 3-year average of low birth weight infants
+were collected from the 2008 area resource file. This is a county level
+database that is maintained by the Bureau of Health Professions, Health
+Resources, and Services Administration, US Department of Health and
+Human Services. The additional explanatory variables were collected from
+the 2000 US Census. The dataset has the following columns:</p>
 <ul>
 <li>Cofips: County FIPS code.</li>
 <li>Deaths: The outcome variable, the 3-year average of infant
 deaths.</li>
-<li>Births: 3- year average of infant births.</li>
+<li>Births: 3-year average of infant births.</li>
 <li>Low_weight: 3-year average of low birth weight infants.</li>
 <li>Black: Percentage of black residents.</li>
 <li>Hispanic: Percentage of Hispanic residents.</li>
@@ -1062,9 +1056,9 @@ attach(infant)
 n &lt;- nrow(infant)
 infant$low_weight = infant$low_weight / infant$births
 y = deaths</code></pre>
-<p><br> In this example we will run the model with <span
-class="math inline">\(\textit{q} =\)</span> 50, 100, 200, and 400 and
-compare the performance of the models.</p>
+<p><br> In this example we will again run the model with <span
+class="math inline">\(q =\)</span> 50, 100, 200, and 400 and compare the
+performance of the models.</p>
 <pre class="r"><code>q = 400 </code></pre>
 <p><br> Create <span class="math inline">\(\textbf{M}\)</span>, the
 Moran operator.</p>
@@ -1137,8 +1131,8 @@ very similar.</p>
 }</code></pre>
 <p><br> Here is where the Stan code begins to differ significantly from
 the previous analysis. We will again use <span
-class="math inline">\(\mathcal{N}(0, 1000)\)</span> as our prior for all
-of the regression coefficients our model. The prior for <span
+class="math inline">\(NORMAL(0, 1000)\)</span> as our prior for all of
+the regression coefficients our model. The prior for <span
 class="math inline">\(\boldsymbol{\gamma}\)</span> is again multinormal
 with mean zero and covariance <span
 class="math inline">\(\textbf{B}/\tau\)</span>. For the Poisson model we
@@ -1185,9 +1179,10 @@ likelihood for each observation.</p>
 <h4><a id="results_2"></a>Results</h4>
 <p>After completing post-processing (using the same functions as in the
 hermit thrush example) we can compare the performance of the four
-models. Comparing the LOOIC values for each value of q we see that the
-model with <span class="math inline">\(q=50\)</span> was the best
-performing according to this information criteria.</p>
+models. Comparing the LOOIC values for each value of <span
+class="math inline">\(q\)</span> we see that the model with <span
+class="math inline">\(q=\)</span> 50 was the best performing according
+to this information criteria.</p>
 <table class=" lightable-classic table table-striped table-hover table-condensed table" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto; font-family: sans-serif; width: auto !important; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -1234,9 +1229,6 @@ LOOIC
 </tr>
 </tbody>
 </table>
-<p>In this example the model that was best performing according to this
-information criteria was <span class="math inline">\(q =\)</span>
-50.</p>
 The results for the <span class="math inline">\(q =\)</span> 50 model
 are as follows:
 <table class=" lightable-classic table table-striped table-hover table-condensed table" style="font-family: &quot;Arial Narrow&quot;, &quot;Source Sans Pro&quot;, sans-serif; margin-left: auto; margin-right: auto; font-family: sans-serif; width: auto !important; margin-left: auto; margin-right: auto; margin-left: auto; margin-right: auto;">
@@ -1396,12 +1388,11 @@ domain settings.</p>
 <ul>
 <li>M. Haran, J. Hughes, and B. S. Lee. Latent Gaussian Models and
 Computation for Large Spatial Data. In S. Brooks, A. Gelman, G, Jones,
-and X.L. Meng, editors, <span class="math inline">\(\textit{Handbook of
-Markov Chian Monte Carlo}\)</span>, Handbook of Modern Statistical
-Methods. Chapman &amp; Hall/CRC, 2024.</li>
-<li>Morris, M. (2019). <span class="math inline">\(\textit{Spatial
-Models in Stan: Intrinsic Auto-Regressive Models for Areal
-Data}\)</span>. <a
+and X.L. Meng, editors, <i>Handbook of Markov Chian Monte Carlo</i>,
+Handbook of Modern Statistical Methods. Chapman &amp; Hall/CRC,
+2024.</li>
+<li>Morris, M. (2019). <i>Spatial Models in Stan: Intrinsic
+Auto-Regressive Models for Areal Data</i>. <a
 href="https://mc-stan.org/users/documentation/case-studies/icar_stan.html"
 class="uri">https://mc-stan.org/users/documentation/case-studies/icar_stan.html</a></li>
 </ul>
@@ -1466,4 +1457,3 @@ $(document).ready(function () {
 
 </body>
 </html>
-
